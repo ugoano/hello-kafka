@@ -1,6 +1,16 @@
 ---
 version: '2.1'
 services:
+  kubemq:
+    hostname: kubemq
+    image: kubemq/kubemq-community:latest
+    ports:
+      - 8080:8080
+      - 50000:50000
+      - 9090:9090
+    networks:
+      - kafka-network
+
   zookeeper:
     hostname: zookeeper
     image: confluentinc/cp-zookeeper:latest
@@ -31,7 +41,9 @@ services:
     container_name: "kafka-spike"
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
     expose:
       - "8000"
     ports:
@@ -39,6 +51,16 @@ services:
     networks:
       - kafka-network
 
+  faust-spike:
+    container_name: "faust-spike"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    command: ["./start-faust-app"]
+    networks:
+      - kafka-network
 
 networks:
   kafka-network:

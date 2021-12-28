@@ -1,0 +1,2 @@
+#!/bin/bash
+faust -A src.faust_greetings worker -l info
