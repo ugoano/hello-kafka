@@ -12,3 +12,4 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 WORKDIR /app
 COPY ./src ./src
 COPY ./scripts/start-faust-app ./
+COPY ./scripts/faust-produce ./
