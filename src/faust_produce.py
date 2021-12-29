@@ -1,5 +1,6 @@
 import click
 import json
+import faust
 
 from kafka import KafkaProducer
 
@@ -32,7 +33,10 @@ def create_kafka_producer():
 @click.argument("message", nargs=-1)
 def main(message):
     kafka_producer = create_kafka_producer()
-    publish_message(kafka_producer, TOPIC, "key", " ".join(message))
+    greeting = {
+        "message": " ".join(message),
+    }
+    publish_message(kafka_producer, TOPIC, "key", json.dumps(greeting))
     if kafka_producer is not None:
         kafka_producer.close()
 

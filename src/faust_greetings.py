@@ -1,15 +1,21 @@
+from datetime import datetime
+
 import faust
 
 app = faust.App(
     "hello-world",
     broker="kafka://kafka:9092",
-    value_serializer="raw",
 )
 
-greetings_topic = app.topic("greetings")
+class Greeting(faust.Record):
+    message: str
+    # timestamp: datetime = datetime.now()
+
+
+greetings_topic = app.topic("greetings", value_type=Greeting)
 
 
 @app.agent(greetings_topic)
-async def greet(greetings):
+async def greet(greetings: Greeting):
     async for greeting in greetings:
-        print(greeting)
+        print(greeting.message)
