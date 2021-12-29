@@ -1,11 +1,41 @@
-import click
+import asyncio
+import argparse
 import json
-import faust
+from datetime import datetime
 
+import faust
 from kafka import KafkaProducer
 
 
 TOPIC = "greetings"
+
+
+app = faust.App(
+    "hello-world-producer",
+    broker="kafka://kafka:9092",
+)
+
+
+class Greeting(faust.Record):
+    message: str
+    timestamp: datetime
+
+
+greetings_topic = app.topic(TOPIC, value_type=Greeting)
+
+
+async def greet(message):
+    await greetings_topic.send(
+        value=Greeting(
+            message=" ".join(message),
+            timestamp=datetime.now(),
+        )
+    )
+
+
+async def async_main(message):
+    await greet(message)
+    await app.producer.stop()
 
 
 def publish_message(producer, topic, key, value):
@@ -29,8 +59,6 @@ def create_kafka_producer():
     return _producer
 
 
-@click.command()
-@click.argument("message", nargs=-1)
 def main(message):
     kafka_producer = create_kafka_producer()
     greeting = {
@@ -42,4 +70,9 @@ def main(message):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("message", nargs="*")
+    args = parser.parse_args()
+
+    # main(args.message)
+    asyncio.run(async_main(args.message))

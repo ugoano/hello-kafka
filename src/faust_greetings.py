@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 import faust
 
@@ -9,13 +10,14 @@ app = faust.App(
 
 class Greeting(faust.Record):
     message: str
-    # timestamp: datetime = datetime.now()
+    timestamp: datetime
 
 
 greetings_topic = app.topic("greetings", value_type=Greeting)
 
 
 @app.agent(greetings_topic)
-async def greet(greetings: Greeting):
+async def greet(greetings: List[Greeting]):
     async for greeting in greetings:
         print(greeting.message)
+        print(greeting.timestamp)
